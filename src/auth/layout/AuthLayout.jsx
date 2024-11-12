@@ -1,16 +1,16 @@
-import { Grid2, Typography } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import React from "react";
 
 export const AuthLayout = ({children, title=""}) => {
   return (
-    <Grid2
+    <Grid
       container
       direction={"column"}
       alignItems={"center"}
       justifyContent={"center"}
       sx={{ minHeight: "100vh", backgroundColor: "primary.main", padding: 4 }}
     >
-      <Grid2
+      <Grid
         item
         className="box-shadow"
         xs={2}
@@ -20,7 +20,7 @@ export const AuthLayout = ({children, title=""}) => {
           {title}
         </Typography>
         {children}
-      </Grid2>
-    </Grid2>
+      </Grid>
+    </Grid>
   );
 };
