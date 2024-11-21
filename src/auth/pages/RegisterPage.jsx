@@ -1,9 +1,18 @@
-import { Button, Grid, Link, TextField, Typography } from "@mui/material";
-import { Link as LinkRouter } from "react-router-dom";
+import {
+  Alert,
+  Button,
+  Grid,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { Link as LinkRouter, Navigate, useNavigate } from "react-router-dom";
 import { initPath } from "../../../config";
-import React, { useState } from "react";
+import React, {  useMemo, useState } from "react";
 import { AuthLayout } from "../layout/AuthLayout";
 import { useForm } from "../../hooks";
+import { startCreatingUserWithEmailPassword } from "../../store/auth/thunks";
+import { useDispatch, useSelector } from "react-redux";
 
 const formData = {
   email: "",
@@ -12,7 +21,7 @@ const formData = {
 };
 
 const formValidations = {
-  email: [(value) => (value.includes("@")), "El Email debe contener un @"],
+  email: [(value) => value.includes("@"), "El Email debe contener un @"],
   password: [
     (value) => value.length > 5,
     "La contraseña debe tener al menos 6 caracteres.",
@@ -21,8 +30,14 @@ const formValidations = {
 };
 
 export const RegisterPage = () => {
+  const dispatch = useDispatch();
+  const [formSubmitted, setformSubmitted] = useState(false);
+  const { status, errorMessage } = useSelector((state) => state.auth);
+  const isCheckingAuthentication = useMemo(
+    () => status === "checking",
+    [status]
+  );
 
-const [formSubmitted, setformSubmitted] = useState(false)
   const {
     displayName,
     email,
@@ -33,17 +48,19 @@ const [formSubmitted, setformSubmitted] = useState(false)
     emailValid,
     passwordValid,
     displayNameValid,
-  } = useForm(formData,formValidations);
+  } = useForm(formData, formValidations);
 
-  console.log(formIsValid)
   const onSubmit = (e) => {
     e.preventDefault();
-    setformSubmitted(true)
-    console.log(formState);
+    setformSubmitted(true);
+    if (!formIsValid) {
+      return;
+    }
+    dispatch(startCreatingUserWithEmailPassword(formState));
   };
   return (
     <AuthLayout title="Crear cuenta">
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="animate__animated animate__fadeIn animate__faster">
         <Grid container spacing={2}>
           <Grid item xs={12} sx={{ mt: 1 }}>
             <TextField
@@ -89,8 +106,24 @@ const [formSubmitted, setformSubmitted] = useState(false)
           </Grid>
         </Grid>
         <Grid container spacing={2} sx={{ mt: 2 }}>
+          <Grid item xs={12} sm={6} display={!!errorMessage ? "" : "none"}>
+            <Alert severity="error">{errorMessage}</Alert>
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            display={status === "authenticated" ? "" : "none"}
+          >
+            <Alert severity="success">Usuario creado con éxito.</Alert>
+          </Grid>
           <Grid item xs={12} sm={6}>
-            <Button variant="contained" fullWidth type="submit">
+            <Button
+              variant="contained"
+              fullWidth
+              type="submit"
+              disabled={isCheckingAuthentication}
+            >
               Crear cuenta
             </Button>
           </Grid>

@@ -1,18 +1,18 @@
 import { Google } from "@mui/icons-material";
-import { Button, Grid, Link, TextField, Typography } from "@mui/material";
-import { Link as LinkRouter } from "react-router-dom";
+import { Alert, Button, Grid, Link, TextField, Typography } from "@mui/material";
+import { Link as LinkRouter, useNavigate } from "react-router-dom";
 import { initPath } from "../../../config";
 import React, { useMemo } from "react";
 import { AuthLayout } from "../layout/AuthLayout";
 import { useForm } from "../../hooks";
 import {
-  checkingAuthentication,
   startGoogleSignIn,
+  startLoginWithEmailAndPassword,
 } from "../../store/auth/thunks";
 import { useDispatch, useSelector } from "react-redux";
 
 export const LoginPage = () => {
-  const { status } = useSelector((state) => state.auth);
+  const { status, errorMessage } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { email, password, onInputChange, formState } = useForm({
     email: "juan@test.com",
@@ -23,7 +23,7 @@ export const LoginPage = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    dispatch(checkingAuthentication(email, password));
+    dispatch(startLoginWithEmailAndPassword(formState));
   };
 
   const onGoogleSignIn = () => {
@@ -32,7 +32,7 @@ export const LoginPage = () => {
 
   return (
     <AuthLayout title="Login">
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="animate__animated animate__fadeIn animate__faster">
         <Grid container spacing={2}>
           <Grid item xs={12} sx={{ mt: 1 }}>
             <TextField
@@ -60,6 +60,17 @@ export const LoginPage = () => {
           </Grid>
         </Grid>
         <Grid container spacing={2} sx={{ mt: 2 }}>
+        <Grid item xs={12} sm={6} display={!!errorMessage ? "" : "none"}>
+            <Alert severity="error">{errorMessage}</Alert>
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            display={status === "authenticated" ? "" : "none"}
+          >
+            <Alert severity="success">Usuario logueado con éxito.</Alert>
+          </Grid>
           <Grid item xs={12} sm={6}>
             <Button
               variant="contained"
